@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alocação BSI · 2026.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F2EA;
+    --ink:#20241F;
+    --ink-soft:#565B52;
+    --line:#D9D2BF;
+    --gold:#B8862E;
+    --gold-soft:#EADFC3;
+    --navy:#2C3A44;
+    --navy-soft:#DCE3E6;
+    --clay:#8B4B3B;
+    --clay-soft:#EBD9D2;
+    --sage:#5A6B4E;
+    --sage-soft:#DFE5D5;
+    --card:#FFFEFB;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Source Serif 4',Georgia,serif;font-weight:600;margin:0;}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 28px 80px;}
+
+  header{border-bottom:2px solid var(--ink);padding-bottom:22px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+  .h-left .kicker{font-size:13px;letter-spacing:.02em;color:var(--gold);font-weight:600;margin-bottom:6px;}
+  .h-left h1{font-size:34px;line-height:1.15;color:var(--ink);}
+  .h-left p{margin:8px 0 0;color:var(--ink-soft);font-size:14.5px;max-width:520px;line-height:1.5;}
+  .h-right{text-align:right;font-size:13px;color:var(--ink-soft);line-height:1.6;}
+  .h-right strong{color:var(--ink);font-family:'Source Serif 4',serif;font-size:15px;}
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:34px;}
+  .kpi{background:var(--card);padding:18px 16px;}
+  .kpi .num{font-family:'Source Serif 4',serif;font-size:30px;font-weight:700;color:var(--ink);}
+  .kpi .lbl{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+  .filters{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end;margin-bottom:30px;padding:16px 18px;background:var(--card);border:1px solid var(--line);}
+  .filter-group{display:flex;flex-direction:column;gap:6px;}
+  .filter-group label{font-size:11.5px;color:var(--ink-soft);font-weight:600;}
+  .pill-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{border:1px solid var(--line);background:transparent;color:var(--ink-soft);padding:6px 12px;font-size:12.5px;border-radius:20px;cursor:pointer;font-family:inherit;transition:.15s;}
+  .pill:hover{border-color:var(--gold);}
+  .pill.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  select, input[type=text]{border:1px solid var(--line);background:var(--paper);padding:7px 10px;font-size:13px;font-family:inherit;color:var(--ink);border-radius:2px;min-width:170px;}
+  .reset-btn{margin-left:auto;align-self:flex-end;background:none;border:none;color:var(--gold);font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;}
+
+  .sec-title{display:flex;align-items:baseline;gap:12px;margin:8px 0 16px;}
+  .sec-title h2{font-size:20px;}
+  .sec-title .count{font-size:12.5px;color:var(--ink-soft);}
+  section{margin-bottom:46px;}
+
+  .grid-wrap{border:1px solid var(--line);background:var(--card);overflow-x:auto;}
+  .tt{display:grid;grid-template-columns:70px repeat(5,1fr);min-width:760px;}
+  .tt .head{background:var(--ink);color:var(--paper);font-size:12.5px;font-weight:600;padding:9px 8px;text-align:center;position:sticky;top:0;}
+  .tt .timecell{background:var(--gold-soft);font-size:11.5px;color:var(--ink);padding:6px;text-align:center;display:flex;align-items:center;justify-content:center;font-weight:600;border-top:1px solid var(--line);}
+  .tt .cell{border-top:1px solid var(--line);border-left:1px solid var(--line);min-height:52px;padding:3px;display:flex;flex-direction:column;gap:3px;}
+  .blk{font-size:10.5px;line-height:1.25;padding:4px 6px;border-radius:2px;cursor:default;}
+  .blk .sig{font-weight:700;display:block;word-break:break-word;}
+  .blk .prof{opacity:.85;display:block;font-size:9.8px;margin-top:1px;}
+  .blk.per1{background:var(--sage-soft);border-left:3px solid var(--sage);}
+  .blk.per2{background:var(--navy-soft);border-left:3px solid var(--navy);}
+  .blk.per3{background:var(--gold-soft);border-left:3px solid var(--gold);}
+  .blk.per4{background:var(--clay-soft);border-left:3px solid var(--clay);}
+  .blk.per5{background:#E4D9EC;border-left:3px solid #6B4A85;}
+  .blk.per6{background:#D9EAEA;border-left:3px solid #2E7A78;}
+  .blk.per7{background:#F0E0D0;border-left:3px solid #A85A1E;}
+  .blk.perO{background:#EDEDED;border-left:3px solid #7A7A7A;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .swatch{width:10px;height:10px;display:inline-block;border-radius:1px;}
+
+  .twocol{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
+  @media (max-width:820px){.twocol{grid-template-columns:1fr;}}
+  .panel{background:var(--card);border:1px solid var(--line);padding:18px 20px;}
+  .panel h3{font-size:15px;margin-bottom:14px;}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 34px;align-items:center;gap:8px;font-size:12.3px;margin-bottom:7px;}
+  .bar-row .name{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{background:var(--line);height:10px;border-radius:2px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--gold);}
+  .bar-fill.navy{background:var(--navy);}
+  .bar-fill.clay{background:var(--clay);}
+  .bar-row .val{text-align:right;color:var(--ink-soft);}
+
+  table{width:100%;border-collapse:collapse;font-size:12.8px;background:var(--card);}
+  thead th{text-align:left;font-size:11px;letter-spacing:.01em;color:var(--ink-soft);font-weight:600;border-bottom:2px solid var(--ink);padding:9px 10px;position:sticky;top:0;background:var(--card);}
+  tbody td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:hover{background:var(--gold-soft);}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:600;}
+  .tag.Obrigatória{background:var(--navy-soft);color:var(--navy);}
+  .tag.Optativa{background:var(--gold-soft);color:#7A5A15;}
+  .tag.Atividade{background:var(--sage-soft);color:var(--sage);}
+  .table-wrap{border:1px solid var(--line);max-height:520px;overflow:auto;}
+  .empty{padding:40px;text-align:center;color:var(--ink-soft);font-size:13px;}
+
+  footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+  .live-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--ink);color:var(--paper);padding:12px 18px;margin-bottom:24px;}
+  .live-dot{width:9px;height:9px;border-radius:50%;background:#6B6F63;flex-shrink:0;}
+  .live-dot.on{background:#4FBF6B;box-shadow:0 0 0 0 rgba(79,191,107,.6);animation:pulse 1.8s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(79,191,107,.55);}
+    70%{box-shadow:0 0 0 8px rgba(79,191,107,0);}
+    100%{box-shadow:0 0 0 0 rgba(79,191,107,0);}
+  }
+  .live-when{font-size:12.5px;color:var(--gold-soft);white-space:nowrap;}
+  .live-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .live-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:4px 10px;font-size:11.5px;border-radius:20px;}
+  .live-chip b{color:var(--gold-soft);}
+  .live-empty{font-size:12.5px;color:#B7BBAE;}
+
+  .blk.now{outline:2px solid var(--gold);outline-offset:-2px;box-shadow:0 0 0 3px rgba(184,134,46,.18);position:relative;}
+  .blk.now::after{content:"● agora";position:absolute;top:-8px;right:2px;font-size:8.5px;font-weight:700;color:#7A5A15;background:var(--gold-soft);padding:0 4px;border-radius:6px;}
+
+  /* eixos disciplinares */
+  .eixo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+  .eixo-card{background:var(--card);border:1px solid var(--line);border-left-width:6px;padding:14px 16px;}
+  .eixo-card .eixo-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;}
+  .eixo-card h4{font-family:'Source Serif 4',serif;font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3;margin:0;}
+  .eixo-card .eixo-count{font-size:11.5px;color:var(--ink-soft);white-space:nowrap;flex-shrink:0;}
+  .eixo-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .eixo-chip{border:none;font-family:inherit;font-size:11.5px;padding:5px 9px;border-radius:3px;cursor:pointer;color:#2A2A22;font-weight:600;transition:.15s;}
+  .eixo-chip:hover{filter:brightness(0.92);}
+  .eixo-chip .p{font-weight:400;opacity:.75;margin-left:4px;}
+  .eixo-other{background:var(--card);border:1px solid var(--line);border-left-width:6px;border-left-color:#B9B9AE;padding:14px 16px;}
+  .eixo-other .eixo-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;}
+  .eixo-other h4{font-family:'Source Serif 4',serif;font-size:14.5px;font-weight:700;color:var(--ink);margin:0;}
+  .eixo-other p{font-size:12px;color:var(--ink-soft);margin:0;line-height:1.5;}
+
+  .dot.gold{background:var(--gold);}
+  .dot.navy{background:var(--navy);}
+  .dot.clay{background:var(--clay);}
+
+  .building{display:flex;gap:16px;align-items:stretch;}
+  .floors{flex:1;display:flex;flex-direction:column;border:1px solid var(--line);background:var(--card);}
+  .floor{display:flex;border-top:1px solid var(--line);}
+  .floor:first-child{border-top:none;}
+  .floor-label{width:110px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Source Serif 4',serif;font-size:13px;padding:10px 8px;line-height:1.3;}
+  .floor-rooms{flex:1;display:flex;flex-wrap:wrap;gap:10px;padding:14px;}
+  .room{min-width:128px;border:1px solid var(--line);background:var(--paper);padding:9px 11px;cursor:pointer;transition:.15s;position:relative;}
+  .room:hover{border-color:var(--gold);}
+  .room.active{background:var(--ink);border-color:var(--ink);}
+  .room.active .room-name,.room.active .room-count,.room.active .room-slots{color:var(--paper);}
+  .room.empty-room{opacity:.4;cursor:default;}
+  .room-name{font-weight:700;font-size:13px;color:var(--ink);}
+  .room-count{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .room-bar{height:4px;background:var(--line);margin-top:7px;border-radius:2px;overflow:hidden;}
+  .room-bar-fill{height:100%;background:var(--gold);}
+  .room.active .room-bar-fill{background:var(--paper);}
+  .room-slots{font-size:10px;color:var(--ink-soft);margin-top:6px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="h-left">
+      <div class="kicker">CURSO DE SISTEMAS DE INFORMAÇÃO</div>
+      <h1>Painel de Alocação · 2026.2</h1>
+      <p>Leitura interativa da grade de turmas, professores, salas e horários do semestre, a partir da planilha oficial de horários do BSI.</p>
+    </div>
+    <div class="h-right">
+      <strong id="lastUpdate">56 turmas cadastradas</strong><br>
+      Fonte: Horario_BSI_2026_2.csv (base tratada)
+    </div>
+  </header>
+
+  <div class="live-banner" id="liveBanner"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>TIPO DE TURMA</label>
+      <div class="pill-row" id="tipoFilter"></div>
+    </div>
+    <div class="filter-group">
+      <label>PERÍODO</label>
+      <div class="pill-row" id="periodoFilter"></div>
+    </div>
+    <div class="filter-group">
+      <label>SALA</label>
+      <select id="salaFilter"><option value="">Todas</option></select>
+    </div>
+    <div class="filter-group">
+      <label>BUSCAR PROFESSOR OU DISCIPLINA</label>
+      <input type="text" id="searchBox" placeholder="ex: Reinaldo, Redes...">
+    </div>
+    <button class="reset-btn" id="resetBtn">Limpar filtros</button>
+  </div>
+
+  <section>
+    <div class="sec-title"><h2>Mapa de salas por andar</h2><span class="count">clique numa sala para filtrar o painel</span></div>
+    <div class="building" id="buildingMap"></div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Grade semanal</h2><span class="count" id="ttCount"></span></div>
+    <div id="eixoActiveNote" style="display:none;font-size:12.5px;color:var(--ink-soft);margin:-8px 0 14px;">
+      Filtro por eixo ativo: <strong id="eixoActiveTerm"></strong> ·
+      <button id="clearEixoBtn" style="background:none;border:none;color:var(--gold);font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;padding:0;">limpar</button>
+    </div>
+    <div class="grid-wrap"><div class="tt" id="timetable"></div></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Disciplinas por eixo disciplinar</h2><span class="count">clique numa disciplina para destacá-la na grade semanal acima</span></div>
+    <div class="eixo-grid" id="eixoGrid"></div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Carga por professor e ocupação de salas</h2></div>
+    <div class="twocol">
+      <div class="panel">
+        <h3>Turmas por professor</h3>
+        <div id="profChart"></div>
+      </div>
+      <div class="panel">
+        <h3>Turmas por sala</h3>
+        <div id="salaChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Vagas ofertadas por período</h2></div>
+    <div class="panel">
+      <div id="vagasChart"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>Lista de turmas</h2><span class="count" id="listCount"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Disciplina</th><th>Sigla</th><th>Período</th><th>Tipo</th><th>Professor</th><th>Horário</th><th>Sala</th><th>Vagas</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Painel construído a partir da planilha de horários — dados tratados e normalizados para análise.</span>
+    <span>BSI · Alocação 2026.2</span>
+  </footer>
+  <footer style="margin-top:8px;padding-top:12px;">
+    <span>Grupo: Alana Goytacazes, Isabela Silva, Pedro Henrique Gonçalves, Mylene Ferreira, Victor Hugo</span>
+  </footer>
+</div>
+
+<script>
+const DATA = [{"disciplina": "Algoritmos e Programação (ingressantes)", "sigla": "ALGPROG/I", "codigo": "TIN0222", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Jefferson", "horarios": ["3ª 14h", "5ª 14h"], "sala": "Lab. 3", "vagas": 36, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Algoritmos e Programação (ingressantes)", "sigla_nova": "ALGPROG/I", "slots": [{"dia": "Terça", "hora": "14h"}, {"dia": "Quinta", "hora": "14h"}]}, {"disciplina": "Algoritmos e Programação (veteranos)", "sigla": "ALGPROG/V", "codigo": "TIN0222", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Reinaldo", "horarios": ["3ª 14h", "5ª 14h"], "sala": "Lab. SAN", "vagas": 30, "disciplina_antiga": "Técnicas de Programação I", "sigla_antiga": "TP1", "disciplina_nova": "Algoritmos e Programação (veteranos)", "sigla_nova": "ALGPROG/V", "slots": [{"dia": "Terça", "hora": "14h"}, {"dia": "Quinta", "hora": "14h"}]}, {"disciplina": "Arquitetura de Computadores", "sigla": "ARQCOMP", "codigo": "TIN0235", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Marcelo", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": "Organização de Computadores", "sigla_antiga": "OC", "disciplina_nova": "Arquitetura de Computadores", "sigla_nova": "ARQCOMP", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Fundamentos de Cálculo", "sigla": "FCAL", "codigo": "TMT0043", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Hellison", "horarios": ["2ª 16h", "4ª 16h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": "Matemática Básica", "sigla_antiga": "MB", "disciplina_nova": "Fundamentos de Cálculo", "sigla_nova": "FCAL", "slots": [{"dia": "Segunda", "hora": "16h"}, {"dia": "Quarta", "hora": "16h"}]}, {"disciplina": "Fundamentos de Sistemas de Informação", "sigla": "FSI", "codigo": "TIN0206", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Rodrigo", "horarios": ["6ª 14h", "6ª 16h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": "Fundamentos de Sistemas de Informação", "sigla_antiga": "FSI", "disciplina_nova": "Fundamentos de Sistemas de Informação", "sigla_nova": "FSI", "slots": [{"dia": "Sexta", "hora": "14h"}, {"dia": "Sexta", "hora": "16h"}]}, {"disciplina": "Interação Humano-Computador", "sigla": "IHC", "codigo": "TIN0208", "periodo": 1, "tipo": "Obrigatória", "professor": "Profª Simone", "horarios": ["2ª 14h", "4ª 14h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Interação Humano-Computador", "sigla_antiga": "IHC", "disciplina_nova": "Interação Humano-Computador", "sigla_nova": "IHC", "slots": [{"dia": "Segunda", "hora": "14h"}, {"dia": "Quarta", "hora": "14h"}]}, {"disciplina": "Informação e Sociedade", "sigla": "INFSOC", "codigo": "TIN0207", "periodo": 1, "tipo": "Obrigatória", "professor": "Prof. Pimentel", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Informação e Sociedade", "sigla_nova": "INFSOC", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Álgebra Linear", "sigla": "AL", "codigo": "TMT0044", "periodo": 2, "tipo": "Obrigatória", "professor": "Prof. Hellison", "horarios": ["2ª 18h", "4ª 18h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": "Álgebra Linear", "sigla_antiga": "AL", "disciplina_nova": "Álgebra Linear", "sigla_nova": "AL", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Quarta", "hora": "18h"}]}, {"disciplina": "Cálculo Diferencial e Integral I", "sigla": "CDI1", "codigo": "TMT0045", "periodo": 2, "tipo": "Obrigatória", "professor": "Prof. Jutuca", "horarios": ["2ª 14h", "4ª 14h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": "Cálculo Diferencial e Integral I", "sigla_antiga": "CDI1", "disciplina_nova": "Cálculo Diferencial e Integral I", "sigla_nova": "CDI1", "slots": [{"dia": "Segunda", "hora": "14h"}, {"dia": "Quarta", "hora": "14h"}]}, {"disciplina": "Fundamentos de Gestão Organizacional", "sigla": "FGO", "codigo": "TIN0218", "periodo": 2, "tipo": "Obrigatória", "professor": "Prof. Henrique", "horarios": ["6ª 14h", "6ª 16h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": "Análise Empresarial e Administrativa", "sigla_antiga": "AEA", "disciplina_nova": "Fundamentos de Gestão Organizacional", "sigla_nova": "FGO", "slots": [{"dia": "Sexta", "hora": "14h"}, {"dia": "Sexta", "hora": "16h"}]}, {"disciplina": "Gestão de Processos de Negócios", "sigla": "GPN", "codigo": "TIN0219", "periodo": 2, "tipo": "Obrigatória", "professor": "Prof. Rodrigo Oliveira", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Gestão de Processos de Negócios", "sigla_nova": "GPN", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Introdução à Lógica Computacional", "sigla": "ILC", "codigo": "TIN0223", "periodo": 2, "tipo": "Obrigatória", "professor": "Profª Cristina", "horarios": ["2ª 16h", "4ª 16h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": "Introdução à Lógica Computacional", "sigla_antiga": "ILC", "disciplina_nova": "Introdução à Lógica Computacional", "sigla_nova": "ILC", "slots": [{"dia": "Segunda", "hora": "16h"}, {"dia": "Quarta", "hora": "16h"}]}, {"disciplina": "Projeto Integrador I", "sigla": "PI1", "codigo": "TIN0209", "periodo": 2, "tipo": "Obrigatória", "professor": "Prof. Rodrigo Oliveira", "horarios": ["6ª 18h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Técnicas de Programação I", "sigla_antiga": "TP1", "disciplina_nova": "Projeto Integrador I", "sigla_nova": "PI1", "slots": [{"dia": "Sexta", "hora": "18h"}]}, {"disciplina": "Técnicas de Programação", "sigla": "TP", "codigo": "TIN0224", "periodo": 2, "tipo": "Obrigatória", "professor": "Profª Laura", "horarios": ["3ª 14h", "5ª 14h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Técnicas de Programação II", "sigla_antiga": "TP2", "disciplina_nova": "Técnicas de Programação", "sigla_nova": "TP", "slots": [{"dia": "Terça", "hora": "14h"}, {"dia": "Quinta", "hora": "14h"}]}, {"disciplina": "Análise e Projeto de Sistemas", "sigla": "APS", "codigo": "TIN0228", "periodo": 3, "tipo": "Obrigatória", "professor": "Profª Bruna", "horarios": ["2ª 16h", "4ª 16h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Análise de Sistemas", "sigla_antiga": "AS", "disciplina_nova": "Análise e Projeto de Sistemas", "sigla_nova": "APS", "slots": [{"dia": "Segunda", "hora": "16h"}, {"dia": "Quarta", "hora": "16h"}]}, {"disciplina": "Cálculo Diferencial e Integral II", "sigla": "CDI2", "codigo": "TMT0046", "periodo": 3, "tipo": "Obrigatória", "professor": "Profª Adriana", "horarios": ["2ª 18h", "4ª 18h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": "Cálculo Diferencial e Integral II", "sigla_antiga": "CDI2", "disciplina_nova": "Cálculo Diferencial e Integral II", "sigla_nova": "CDI2", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Quarta", "hora": "18h"}]}, {"disciplina": "Estruturas de Dados", "sigla": "ED", "codigo": "TIN0225", "periodo": 3, "tipo": "Obrigatória", "professor": "Prof. Pedro", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Estruturas de Dados I", "sigla_antiga": "ED1", "disciplina_nova": "Estruturas de Dados", "sigla_nova": "ED", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Linguagens e Paradigmas de Programação", "sigla": "LPP", "codigo": "TIN0226", "periodo": 3, "tipo": "Obrigatória", "professor": "Profª Geiza", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Linguagens Formais e Autômatos", "sigla_antiga": "LFA", "disciplina_nova": "Linguagens e Paradigmas de Programação", "sigla_nova": "LPP", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Modelagem da Informação", "sigla": "MI", "codigo": "TIN0232", "periodo": 3, "tipo": "Obrigatória", "professor": "Prof. Fabrício", "horarios": ["2ª 14h", "4ª 14h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Banco de Dados I", "sigla_antiga": "BD1", "disciplina_nova": "Modelagem da Informação", "sigla_nova": "MI", "slots": [{"dia": "Segunda", "hora": "14h"}, {"dia": "Quarta", "hora": "14h"}]}, {"disciplina": "Sistemas Operacionais", "sigla": "SO", "codigo": "TIN0236", "periodo": 3, "tipo": "Obrigatória", "professor": "Profª Morganna", "horarios": ["3ª 14h", "5ª 14h"], "sala": "Lab. 1", "vagas": 40, "disciplina_antiga": "Sistemas Operacionais", "sigla_antiga": "SO", "disciplina_nova": "Sistemas Operacionais", "sigla_nova": "SO", "slots": [{"dia": "Terça", "hora": "14h"}, {"dia": "Quinta", "hora": "14h"}]}, {"disciplina": "Armazenamento e Gestão de Dados", "sigla": "AGD", "codigo": "TIN0233", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Tadeu", "horarios": ["2ª 20h", "4ª 20h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Banco de Dados II", "sigla_antiga": "BD2", "disciplina_nova": "Armazenamento e Gestão de Dados", "sigla_nova": "AGD", "slots": [{"dia": "Segunda", "hora": "20h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Engenharia de Software I", "sigla": "ES1", "codigo": "TIN0229", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Jobson", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Projeto e Construção de Sistemas", "sigla_antiga": "PCS", "disciplina_nova": "Engenharia de Software I", "sigla_nova": "ES1", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Projeto e Análise de Algoritmos", "sigla": "PAA", "codigo": "TIN0227", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Andreatta", "horarios": ["2ª 18h", "4ª 18h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Análise de Algoritmos", "sigla_antiga": "AA", "disciplina_nova": "Projeto e Análise de Algoritmos", "sigla_nova": "PAA", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Quarta", "hora": "18h"}]}, {"disciplina": "Projeto Integrador II", "sigla": "PI2", "codigo": "TIN0210", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Fabrício", "horarios": ["2ª 16h", "4ª 16h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Projeto e Construção de Sistemas com SGBD", "sigla_antiga": "PCS-SGBD", "disciplina_nova": "Projeto Integrador II", "sigla_nova": "PI2", "slots": [{"dia": "Segunda", "hora": "16h"}, {"dia": "Quarta", "hora": "16h"}]}, {"disciplina": "Probabilidade", "sigla": "PROB", "codigo": "TMQ0007", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Felipe", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Sala 215", "vagas": 40, "disciplina_antiga": "Probabilidade", "sigla_antiga": "PROB", "disciplina_nova": "Probabilidade", "sigla_nova": "PROB", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Redes de Computadores", "sigla": "RC", "codigo": "TIN0237", "periodo": 4, "tipo": "Obrigatória", "professor": "Prof. Beto", "horarios": ["6ª 18h", "6ª 20h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Redes de Computadores I", "sigla_antiga": "RC1", "disciplina_nova": "Redes de Computadores", "sigla_nova": "RC", "slots": [{"dia": "Sexta", "hora": "18h"}, {"dia": "Sexta", "hora": "20h"}]}, {"disciplina": "Engenharia de Software II", "sigla": "ES2", "codigo": "TIN0230", "periodo": 5, "tipo": "Obrigatória", "professor": "Prof. Marcelo", "horarios": ["3ª 20h", "5ª 20h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Programação Modular", "sigla_antiga": "PM", "disciplina_nova": "Engenharia de Software II", "sigla_nova": "ES2", "slots": [{"dia": "Terça", "hora": "20h"}, {"dia": "Quinta", "hora": "20h"}]}, {"disciplina": "Estatística", "sigla": "ESTAT", "codigo": "TMQ0008", "periodo": 5, "tipo": "Obrigatória", "professor": "Prof. Alexandre Silva", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Lab. 2", "vagas": 40, "disciplina_antiga": "Estatística", "sigla_antiga": "ESTAT", "disciplina_nova": "Estatística", "sigla_nova": "ESTAT", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Gerência de Projetos", "sigla": "GP", "codigo": "TIN0231", "periodo": 5, "tipo": "Obrigatória", "professor": "Prof. Marcio", "horarios": ["2ª 18h", "4ª 18h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": "Gerência de Projetos em Informática", "sigla_antiga": "GPI", "disciplina_nova": "Gerência de Projetos", "sigla_nova": "GP", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Quarta", "hora": "18h"}]}, {"disciplina": "Governança de Tecnologia da Informação", "sigla": "GTI", "codigo": "TIN0220", "periodo": 5, "tipo": "Obrigatória", "professor": "Prof. Henrique", "horarios": ["6ª 18h", "6ª 20h"], "sala": "Sala 212", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Governança de Tecnologia da Informação", "sigla_nova": "GTI", "slots": [{"dia": "Sexta", "hora": "18h"}, {"dia": "Sexta", "hora": "20h"}]}, {"disciplina": "Metodologia Científica e Tecnológica", "sigla": "MCT", "codigo": "TIN0211", "periodo": 5, "tipo": "Obrigatória", "professor": "Profª Maria Augusta", "horarios": ["2ª 20h", "4ª 20h"], "sala": "Lab. 3", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Metodologia Científica e Tecnológica", "sigla_nova": "MCT", "slots": [{"dia": "Segunda", "hora": "20h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Ciência de Dados", "sigla": "CD", "codigo": "TIN0234", "periodo": 6, "tipo": "Obrigatória", "professor": "Prof. Carlos Eduardo", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Lab. 1", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Ciência de Dados", "sigla_nova": "CD", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Empreendedorismo e Inovação", "sigla": "EI", "codigo": "TIN0221", "periodo": 6, "tipo": "Obrigatória", "professor": "Prof. Cereja", "horarios": ["2ª 18h", "4ª 18h"], "sala": "Lab. 1", "vagas": 40, "disciplina_antiga": "Empreendedorismo", "sigla_antiga": "EMPR", "disciplina_nova": "Empreendedorismo e Inovação", "sigla_nova": "EI", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Quarta", "hora": "18h"}]}, {"disciplina": "Projeto de Graduação I", "sigla": "PG1", "codigo": "TIN0308", "periodo": 7, "tipo": "Obrigatória", "professor": "Profª Geiza", "horarios": ["3ª 20h", "5ª 20h"], "sala": "Sala 215", "vagas": 50, "disciplina_antiga": "Projeto de Graduação I", "sigla_antiga": "PG1", "disciplina_nova": "Projeto de Graduação I", "sigla_nova": "PG1", "slots": [{"dia": "Terça", "hora": "20h"}, {"dia": "Quinta", "hora": "20h"}]}, {"disciplina": "Algoritmos para Ciência de Dados", "sigla": "ACD", "codigo": "TIN0252", "periodo": "O", "tipo": "Optativa", "professor": "Profª Laura", "horarios": ["2ª 16h", "4ª 16h"], "sala": "Lab. 1", "vagas": 25, "disciplina_antiga": "Tópicos Avançados em Banco de Dados III", "sigla_antiga": "TABD3", "disciplina_nova": "Algoritmos para Ciência de Dados", "sigla_nova": "ACD", "slots": [{"dia": "Segunda", "hora": "16h"}, {"dia": "Quarta", "hora": "16h"}]}, {"disciplina": "Acessibilidade [PPGI]", "sigla": "ACESS", "codigo": "TIN0238", "periodo": "O", "tipo": "Optativa", "professor": "Profª Simone", "horarios": ["4ª 18h", "4ª 20h"], "sala": "Lab. SAN", "vagas": 5, "disciplina_antiga": "Programação Linear [PPGI]", "sigla_antiga": "PL", "disciplina_nova": "Acessibilidade [PPGI]", "sigla_nova": "ACESS", "slots": [{"dia": "Quarta", "hora": "18h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Ambiente Operacional UNIX", "sigla": "AOU", "codigo": "TIN0150", "periodo": "O", "tipo": "Optativa", "professor": "Profª Morganna", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Lab. SAN", "vagas": 25, "disciplina_antiga": "Ambiente Operacional UNIX", "sigla_antiga": "AOU", "disciplina_nova": "Ambiente Operacional UNIX", "sigla_nova": "AOU", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Aprendizagem Profunda", "sigla": "AP", "codigo": "TIN0255", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Pedro", "horarios": ["3ª 20h", "5ª 20h"], "sala": "Lab. 2", "vagas": 25, "disciplina_antiga": "Fluxos em Redes", "sigla_antiga": "FR", "disciplina_nova": "Aprendizagem Profunda", "sigla_nova": "AP", "slots": [{"dia": "Terça", "hora": "20h"}, {"dia": "Quinta", "hora": "20h"}]}, {"disciplina": "Automação", "sigla": "AUTO", "codigo": "TIN0297", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Leo Rocha", "horarios": ["2ª 20h", "4ª 20h"], "sala": "Lab. 1", "vagas": 25, "disciplina_antiga": "Tópicos Avançados em Redes de Computadores I", "sigla_antiga": "TARC1", "disciplina_nova": "Automação", "sigla_nova": "AUTO", "slots": [{"dia": "Segunda", "hora": "20h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Cibercultura", "sigla": "CBC", "codigo": "TIN0239", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Pimentel", "horarios": ["3ª 20h", "5ª 20h"], "sala": "Sala 212", "vagas": 25, "disciplina_antiga": "Ger. de Dados em Amb. Distribuídos e Paralelos", "sigla_antiga": "GDADP", "disciplina_nova": "Cibercultura", "sigla_nova": "CBC", "slots": [{"dia": "Terça", "hora": "20h"}, {"dia": "Quinta", "hora": "20h"}]}, {"disciplina": "Ciência de Redes [PPGI]", "sigla": "CR", "codigo": "TIN0240", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Jefferson", "horarios": ["2ª 18h", "2ª 20h"], "sala": "Anexo 1", "vagas": 5, "disciplina_antiga": "Tópicos Avançados em Redes de Computadores III [PPGI]", "sigla_antiga": "TARC3", "disciplina_nova": "Ciência de Redes [PPGI]", "sigla_nova": "CR", "slots": [{"dia": "Segunda", "hora": "18h"}, {"dia": "Segunda", "hora": "20h"}]}, {"disciplina": "Estruturas Discretas com Algoritmos", "sigla": "EDALG", "codigo": "TIN0257", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Andreatta", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Lab. SAN", "vagas": 25, "disciplina_antiga": "Estruturas Discretas", "sigla_antiga": "EDC", "disciplina_nova": "Estruturas Discretas com Algoritmos", "sigla_nova": "EDALG", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Heurísticas Inteligentes: Técnicas e Aplicações [PPGI]", "sigla": "HITA", "codigo": "TIN0260", "periodo": "O", "tipo": "Optativa", "professor": "Profª Adriana", "horarios": ["4ª 18h", "4ª 20h"], "sala": "Anexo 2", "vagas": 5, "disciplina_antiga": "Algoritmos para Problemas Combinatórios [PPGI]", "sigla_antiga": "APC", "disciplina_nova": "Heurísticas Inteligentes: Técnicas e Aplicações [PPGI]", "sigla_nova": "HITA", "slots": [{"dia": "Quarta", "hora": "18h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Projeto de Aplicações com Dados Abertos", "sigla": "PADA", "codigo": "TIN0291", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Reinaldo", "horarios": ["3ª 16h", "5ª 16h"], "sala": "Lab. 1", "vagas": 25, "disciplina_antiga": "Tópicos Avançados em Banco de Dados II", "sigla_antiga": "TABD2", "disciplina_nova": "Projeto de Aplicações com Dados Abertos", "sigla_nova": "PADA", "slots": [{"dia": "Terça", "hora": "16h"}, {"dia": "Quinta", "hora": "16h"}]}, {"disciplina": "Segurança de Tecnologia da Informação", "sigla": "STI", "codigo": "TIN0302", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Beto", "horarios": ["6ª 14h", "6ª 16h"], "sala": "Lab. 2", "vagas": 25, "disciplina_antiga": "Tópicos Avançados em Redes de Computadores II", "sigla_antiga": "TARC2", "disciplina_nova": "Segurança de Tecnologia da Informação", "sigla_nova": "STI", "slots": [{"dia": "Sexta", "hora": "14h"}, {"dia": "Sexta", "hora": "16h"}]}, {"disciplina": "Tópicos em Informática na Educação", "sigla": "TIEDU", "codigo": "TIN0247", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Sean", "horarios": ["6ª 18h", "6ª 20h"], "sala": "Sala 215", "vagas": 25, "disciplina_antiga": "Informática na Educação", "sigla_antiga": "INFEDU", "disciplina_nova": "Tópicos em Informática na Educação", "sigla_nova": "TIEDU", "slots": [{"dia": "Sexta", "hora": "18h"}, {"dia": "Sexta", "hora": "20h"}]}, {"disciplina": "Tópicos em Inovação Tecnológica", "sigla": "TIT", "codigo": "TIN0250", "periodo": "O", "tipo": "Optativa", "professor": "Profª Maria Augusta", "horarios": ["3ª 18h", "5ª 18h"], "sala": "Sala 105", "vagas": 25, "disciplina_antiga": "Computação Gráfica", "sigla_antiga": "CG", "disciplina_nova": "Tópicos em Inovação Tecnológica", "sigla_nova": "TIT", "slots": [{"dia": "Terça", "hora": "18h"}, {"dia": "Quinta", "hora": "18h"}]}, {"disciplina": "Tópicos em Projeto de Software", "sigla": "TPS", "codigo": "TIN0285", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Jobson", "horarios": ["3ª 20h", "5ª 20h"], "sala": "Lab. 1", "vagas": 25, "disciplina_antiga": "Tópicos Avançados em Engenharia de Software II", "sigla_antiga": "TAES2", "disciplina_nova": "Tópicos em Projeto de Software", "sigla_nova": "TPS", "slots": [{"dia": "Terça", "hora": "20h"}, {"dia": "Quinta", "hora": "20h"}]}, {"disciplina": "Tópicos em Qualidade de Software", "sigla": "TQS", "codigo": "TIN0286", "periodo": "O", "tipo": "Optativa", "professor": "Prof. Gleison", "horarios": ["2ª 20h", "4ª 20h"], "sala": "Sala 215", "vagas": 25, "disciplina_antiga": "Processos de Software", "sigla_antiga": "PS", "disciplina_nova": "Tópicos em Qualidade de Software", "sigla_nova": "TQS", "slots": [{"dia": "Segunda", "hora": "20h"}, {"dia": "Quarta", "hora": "20h"}]}, {"disciplina": "Atividades Complementares e de Extensão 1", "sigla": "ACE1", "codigo": "TIN0054", "periodo": "A", "tipo": "Atividade", "professor": "Prof. Alexandre", "horarios": ["2ª 8h"], "sala": "–", "vagas": 40, "disciplina_antiga": "Atividades Complementares e de Extensão 1", "sigla_antiga": "ACE1", "disciplina_nova": null, "sigla_nova": null, "slots": [{"dia": "Segunda", "hora": "8h"}]}, {"disciplina": "Atividades Complementares e de Extensão 2", "sigla": "ACE2", "codigo": "TIN0055", "periodo": "A", "tipo": "Atividade", "professor": "Prof. Alexandre", "horarios": ["3ª 8h"], "sala": "–", "vagas": 40, "disciplina_antiga": "Atividades Complementares e de Extensão 2", "sigla_antiga": "ACE2", "disciplina_nova": null, "sigla_nova": null, "slots": [{"dia": "Terça", "hora": "8h"}]}, {"disciplina": "Atividades Complementares e de Extensão 3", "sigla": "ACE3", "codigo": "TIN0056", "periodo": "A", "tipo": "Atividade", "professor": "Prof. Leo Rocha", "horarios": ["4ª 8h"], "sala": "–", "vagas": 40, "disciplina_antiga": "Atividades Complementares e de Extensão 3", "sigla_antiga": "ACE3", "disciplina_nova": null, "sigla_nova": null, "slots": [{"dia": "Quarta", "hora": "8h"}]}, {"disciplina": "Atividades Complementares e de Extensão 4", "sigla": "ACE4", "codigo": "TIN0057", "periodo": "A", "tipo": "Atividade", "professor": "Prof. Leo Rocha", "horarios": ["5ª 8h"], "sala": "–", "vagas": 40, "disciplina_antiga": "Atividades Complementares e de Extensão 4", "sigla_antiga": "ACE4", "disciplina_nova": null, "sigla_nova": null, "slots": [{"dia": "Quinta", "hora": "8h"}]}, {"disciplina": "Atividades de Extensão I", "sigla": "AE1", "codigo": "TIN0306", "periodo": "A", "tipo": "Atividade", "professor": "Profª Geiza", "horarios": ["–"], "sala": "–", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Atividades de Extensão I", "sigla_nova": "AE1", "slots": []}, {"disciplina": "Atividades de Extensão II", "sigla": "AE2", "codigo": "TIN0307", "periodo": "A", "tipo": "Atividade", "professor": "Profª Geiza", "horarios": ["–"], "sala": "–", "vagas": 40, "disciplina_antiga": null, "sigla_antiga": null, "disciplina_nova": "Atividades de Extensão II", "sigla_nova": "AE2", "slots": []}, {"disciplina": "Projeto de Graduação II", "sigla": "PG2", "codigo": "TIN0309", "periodo": "A", "tipo": "Atividade", "professor": "(orientadores)", "horarios": ["Sáb. 8h"], "sala": "–", "vagas": 50, "disciplina_antiga": "Projeto de Graduação II", "sigla_antiga": "PG2", "disciplina_nova": "Projeto de Graduação II", "sigla_nova": "PG2", "slots": [{"dia": "Sábado", "hora": "8h"}]}];
+
+const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta"];
+const HORAS = ["8h","14h","16h","18h","20h"];
+const PERIODOS = [1,2,3,4,5,6,7,"O","A"];
+const perClass = p => p==="O" ? "perO" : p==="A" ? "perO" : "per"+p;
+
+// Eixos disciplinares do fluxograma curricular (curso de BSI)
+const EIXOS = [
+  { label:"Visão Sistêmica (Sistemas de Informação)", color:"#FFF176", siglas:["FSI","INFSOC","IHC","PI1","PI2","MCT"] },
+  { label:"Visão Sistêmica (Fundamentos de Matemática)", color:"#FFCC80", siglas:["FCAL","AL","CDI1","CDI2","PROB","ESTAT"] },
+  { label:"Gestão de SI e TI, Empreendedorismo e Inovação", color:"#CE93D8", siglas:["GPN","FGO","GTI","EI"] },
+  { label:"Desenvolvimento de Software para SI (Programação e Algoritmos)", color:"#81D4FA", siglas:["ALGPROG","ILC","TP","LPP","ED","PAA"] },
+  { label:"Desenvolvimento de Software para SI (Engenharia de Software)", color:"#9FA8DA", siglas:["APS","ES1","ES2","GP"] },
+  { label:"Engenharia de Dados e Informação", color:"#A5D6A7", siglas:["MI","AGD","CD"] },
+  { label:"Infraestrutura em SI", color:"#F48FB1", siglas:["ARQCOMP","SO","RC"] },
+];
+
+// ALGPROG/I (ingressantes) e ALGPROG/V (veteranos) são a mesma disciplina,
+// ofertada em duas turmas distintas — tratadas como um único item nos eixos.
+const SIGLA_GROUPS = { "ALGPROG": ["ALGPROG/I","ALGPROG/V"] };
+// PG1 e PG2 (Projeto de Graduação I e II) não constam no fluxograma de eixos.
+
+let state = { tipo:new Set(), periodo:new Set(), sala:"", search:"", eixoSearch:"" };
+
+function matchesSearch(d, term){
+  const s = term.toLowerCase();
+  return (d.professor||"").toLowerCase().includes(s) || (d.disciplina||"").toLowerCase().includes(s) || (d.sigla||"").toLowerCase().includes(s);
+}
+
+function filtered(){
+  return DATA.filter(d=>{
+    if(state.tipo.size && !state.tipo.has(d.tipo)) return false;
+    if(state.periodo.size && !state.periodo.has(String(d.periodo))) return false;
+    if(state.sala && d.sala !== state.sala) return false;
+    if(state.search && !matchesSearch(d, state.search)) return false;
+    return true;
+  });
+}
+
+// Usado apenas pela grade semanal: aplica os mesmos filtros gerais,
+// mais o filtro por disciplina/eixo (clique num chip da seção "Disciplinas
+// por eixo disciplinar"), que não deve afetar os demais painéis do dashboard.
+function filteredForTimetable(){
+  return filtered().filter(d=> !state.eixoSearch || matchesSearch(d, state.eixoSearch));
+}
+
+function uniqueSorted(arr){ return [...new Set(arr)].sort(); }
+
+function buildFilters(){
+  const tipos = uniqueSorted(DATA.map(d=>d.tipo));
+  const tipoWrap = document.getElementById('tipoFilter');
+  tipos.forEach(t=>{
+    const b = document.createElement('button');
+    b.className='pill'; b.textContent=t; b.dataset.val=t;
+    b.onclick=()=>{ toggleSet(state.tipo,t); b.classList.toggle('active'); render(); };
+    tipoWrap.appendChild(b);
+  });
+
+  const periodoWrap = document.getElementById('periodoFilter');
+  const periodOrder = [1,2,3,4,5,6,7,"O","A"];
+  periodOrder.forEach(p=>{
+    if(!DATA.some(d=>String(d.periodo)===String(p))) return;
+    const b = document.createElement('button');
+    b.className='pill';
+    b.textContent = (p==="O"?"Optativas":p==="A"?"Atividades":p+"º");
+    b.dataset.val=p;
+    b.onclick=()=>{ toggleSet(state.periodo,String(p)); b.classList.toggle('active'); render(); };
+    periodoWrap.appendChild(b);
+  });
+
+  const salaSel = document.getElementById('salaFilter');
+  uniqueSorted(DATA.map(d=>d.sala)).forEach(s=>{
+    const o = document.createElement('option'); o.value=s; o.textContent=s; salaSel.appendChild(o);
+  });
+  salaSel.onchange = e => { state.sala = e.target.value; render(); };
+
+  document.getElementById('searchBox').oninput = e => { state.search = e.target.value; render(); };
+  document.getElementById('clearEixoBtn').onclick = () => { state.eixoSearch = ""; render(); };
+  document.getElementById('resetBtn').onclick = () => {
+    state = { tipo:new Set(), periodo:new Set(), sala:"", search:"", eixoSearch:"" };
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    salaSel.value=""; document.getElementById('searchBox').value="";
+    render();
+  };
+}
+
+function toggleSet(set,val){ set.has(val) ? set.delete(val) : set.add(val); }
+
+function nowInfo(){
+  const d = new Date();
+  const dayNames = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+  const dayName = dayNames[d.getDay()];
+  const hour = d.getHours();
+  const ranges = [["8h",8,10],["14h",14,16],["16h",16,18],["18h",18,20],["20h",20,22]];
+  let slot = null;
+  for(const [label,start,end] of ranges){ if(hour>=start && hour<end){ slot=label; break; } }
+  return { dayName, slot, timeStr: d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), valid: !!slot && DIAS.includes(dayName) };
+}
+
+function renderLiveBanner(){
+  const now = nowInfo();
+  const happening = now.valid ? DATA.filter(d=>(d.slots||[]).some(s=>s.dia===now.dayName && s.hora===now.slot)) : [];
+  const chips = happening.map(d=>`<span class="live-chip"><b>${d.disciplina}</b> · ${d.sala} · ${d.professor.replace(/^Prof(a|ª)?\.?\s?/,'')}</span>`).join('');
+  document.getElementById('liveBanner').innerHTML = `
+    <div class="live-dot ${happening.length?'on':''}"></div>
+    <div class="live-when">${now.dayName}, ${now.timeStr}</div>
+    ${happening.length
+      ? `<div class="live-chips">${chips}</div>`
+      : `<div class="live-empty">${now.valid ? 'Nenhuma turma em aula neste horário.' : 'Fora do horário letivo (aulas de 2ª a 6ª, 8h–22h).'}</div>`}
+  `;
+}
+
+function renderKPIs(list){
+  const profs = new Set(list.map(d=>d.professor)).size;
+  const salas = new Set(list.filter(d=>d.sala && d.sala!=="–").map(d=>d.sala)).size;
+  const vagas = list.reduce((a,d)=>a+(d.vagas||0),0);
+  const obrig = list.filter(d=>d.tipo==="Obrigatória").length;
+  const kpis = [
+    [list.length, "Turmas exibidas"],
+    [profs, "Professores"],
+    [salas, "Salas em uso"],
+    [Math.round(vagas), "Vagas ofertadas"],
+    [obrig, "Turmas obrigatórias"],
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(([n,l])=>`<div class="kpi"><div class="num">${n}</div><div class="lbl">${l}</div></div>`).join('');
+}
+
+function renderTimetable(list){
+  const now = nowInfo();
+  const tt = document.getElementById('timetable');
+  tt.innerHTML = '';
+  tt.appendChild(el('div','head',''));
+  DIAS.forEach(d=> tt.appendChild(el('div','head',d)));
+  HORAS.forEach(h=>{
+    tt.appendChild(el('div','timecell',h));
+    DIAS.forEach(dia=>{
+      const cell = document.createElement('div'); cell.className='cell';
+      list.forEach(d=>{
+        (d.slots||[]).forEach(sl=>{
+          if(sl.dia===dia && sl.hora===h){
+            const isNow = now.valid && now.dayName===dia && now.slot===h;
+            const blk = document.createElement('div');
+            blk.className = 'blk '+perClass(String(d.periodo))+(isNow?' now':'');
+            blk.title = d.disciplina+' — '+d.professor+' — '+d.sala;
+            blk.innerHTML = `<span class="sig">${d.disciplina}</span><span class="prof">${d.professor.replace(/^Prof(a|ª)?\.?\s?/,'')} · ${d.sala}</span>`;
+            cell.appendChild(blk);
+          }
+        });
+      });
+      tt.appendChild(cell);
+    });
+  });
+  document.getElementById('ttCount').textContent = list.length+' turma(s) no filtro atual';
+
+  const note = document.getElementById('eixoActiveNote');
+  if(state.eixoSearch){
+    note.style.display = '';
+    document.getElementById('eixoActiveTerm').textContent = state.eixoSearch;
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function renderLegend(){
+  const items = [
+    ['per1','1º–2º período (fund.)'],['per3','3º período'],['per4','4º período'],
+    ['per5','5º período'],['per6','6º período'],['per7','7º (TCC)'],['perO','Optativas / Atividades']
+  ];
+  document.getElementById('legend').innerHTML = items.map(([cls,label])=>{
+    const bg = getComputedBlkColor(cls);
+    return `<span><span class="swatch" style="background:${bg}"></span>${label}</span>`;
+  }).join('');
+}
+function getComputedBlkColor(cls){
+  const map = {per1:'#DFE5D5',per3:'#EADFC3',per4:'#EBD9D2',per5:'#E4D9EC',per6:'#D9EAEA',per7:'#F0E0D0',perO:'#EDEDED'};
+  return map[cls]||'#ccc';
+}
+
+const FLOOR_PLAN = [
+  { label:"2º andar", rooms:["Sala 212","Sala 215","Lab. SAN"] },
+  { label:"1º andar", rooms:["Lab. 1","Lab. 2","Lab. 3","Sala 105"] },
+];
+
+function filteredExcludingSala(){
+  return DATA.filter(d=>{
+    if(state.tipo.size && !state.tipo.has(d.tipo)) return false;
+    if(state.periodo.size && !state.periodo.has(String(d.periodo))) return false;
+    if(state.search){
+      const s = state.search.toLowerCase();
+      if(!(d.professor||"").toLowerCase().includes(s) && !(d.disciplina||"").toLowerCase().includes(s) && !(d.sigla||"").toLowerCase().includes(s)) return false;
+    }
+    return true;
+  });
+}
+
+function roomBoxHTML(roomName, list, maxCount){
+  const turmas = list.filter(d=>d.sala===roomName);
+  const count = turmas.length;
+  const slots = uniqueSorted(turmas.flatMap(d=>(d.slots||[]).map(s=>s.dia.slice(0,3)+' '+s.hora)));
+  const active = state.sala === roomName;
+  const empty = count === 0;
+  const pct = maxCount ? Math.round(count/maxCount*100) : 0;
+  return `<div class="room ${active?'active':''} ${empty?'empty-room':''}" data-room="${roomName}">
+    <div class="room-name">${roomName}</div>
+    <div class="room-count">${count} turma${count===1?'':'s'}</div>
+    <div class="room-bar"><div class="room-bar-fill" style="width:${pct}%"></div></div>
+    <div class="room-slots">${slots.slice(0,4).join(' · ')}${slots.length>4?' …':''}</div>
+  </div>`;
+}
+
+function renderRoomMap(){
+  const list = filteredExcludingSala();
+  const allRoomNames = FLOOR_PLAN.flatMap(f=>f.rooms);
+  const counts = allRoomNames.map(r=>list.filter(d=>d.sala===r).length);
+  const maxCount = Math.max(1,...counts);
+
+  const floorsHTML = FLOOR_PLAN.map(f=>`
+    <div class="floor">
+      <div class="floor-label">${f.label}</div>
+      <div class="floor-rooms">${f.rooms.map(r=>roomBoxHTML(r,list,maxCount)).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('buildingMap').innerHTML = `<div class="floors">${floorsHTML}</div>`;
+
+  document.querySelectorAll('.room:not(.empty-room)').forEach(box=>{
+    box.onclick = () => {
+      const r = box.dataset.room;
+      state.sala = (state.sala === r) ? "" : r;
+      document.getElementById('salaFilter').value = state.sala;
+      render();
+    };
+  });
+}
+
+function renderBarPanel(containerId, list, keyFn, colorClass, max){
+  const counts = {};
+  list.forEach(d=>{ const k=keyFn(d); if(!k) return; counts[k]=(counts[k]||0)+1; });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const m = max || Math.max(1,...entries.map(e=>e[1]));
+  const html = entries.map(([name,val])=>`
+    <div class="bar-row">
+      <div class="name" title="${name}">${name}</div>
+      <div class="bar-track"><div class="bar-fill ${colorClass}" style="width:${(val/m*100).toFixed(0)}%"></div></div>
+      <div class="val">${val}</div>
+    </div>`).join('');
+  document.getElementById(containerId).innerHTML = html || '<div class="empty">Sem dados para este filtro</div>';
+}
+
+function renderVagas(list){
+  const order = [1,2,3,4,5,6,7,"O","A"];
+  const labelMap = {1:'1º',2:'2º',3:'3º',4:'4º',5:'5º',6:'6º',7:'7º',O:'Optativas',A:'Atividades'};
+  const sums = {};
+  list.forEach(d=>{ const k=String(d.periodo); sums[k]=(sums[k]||0)+(d.vagas||0); });
+  const max = Math.max(1,...Object.values(sums));
+  const html = order.filter(p=>sums[String(p)]).map(p=>{
+    const val = sums[String(p)];
+    return `<div class="bar-row">
+      <div class="name">${labelMap[p]}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(val/max*100).toFixed(0)}%"></div></div>
+      <div class="val">${Math.round(val)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('vagasChart').innerHTML = html || '<div class="empty">Sem dados</div>';
+}
+
+function renderTable(list){
+  const tbody = document.getElementById('tbody');
+  if(!list.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty">Nenhuma turma corresponde aos filtros selecionados.</td></tr>`; }
+  else {
+    tbody.innerHTML = list.map(d=>`
+      <tr>
+        <td>${d.disciplina}</td>
+        <td>${d.sigla}</td>
+        <td>${d.periodo==="O"?"Opt.":d.periodo==="A"?"Ativ.":d.periodo+'º'}</td>
+        <td><span class="tag ${d.tipo}">${d.tipo}</span></td>
+        <td>${d.professor}</td>
+        <td>${(d.horarios||[]).join(' · ')}</td>
+        <td>${d.sala}</td>
+        <td>${d.vagas ?? '–'}</td>
+      </tr>`).join('');
+  }
+  document.getElementById('listCount').textContent = list.length+' turma(s)';
+}
+
+function el(tag,cls,text){ const e=document.createElement(tag); e.className=cls; e.textContent=text; return e; }
+
+function textColorFor(bgHex){
+  const c = bgHex.replace('#','');
+  const r = parseInt(c.substring(0,2),16), g = parseInt(c.substring(2,4),16), b = parseInt(c.substring(4,6),16);
+  const luminance = (0.299*r + 0.587*g + 0.114*b)/255;
+  return luminance > 0.6 ? '#20241F' : '#FFFEFB';
+}
+
+function renderEixos(){
+  const bySigla = {};
+  DATA.forEach(d=>{ bySigla[d.sigla] = d; });
+
+  // expande os grupos (ex.: "ALGPROG" -> ["ALGPROG/I","ALGPROG/V"]) para
+  // saber quais turmas reais da planilha já estão classificadas em algum eixo
+  const classified = new Set();
+  EIXOS.forEach(e=>e.siglas.forEach(s=>{
+    (SIGLA_GROUPS[s]||[s]).forEach(real=>classified.add(real));
+  }));
+
+  const cardsHTML = EIXOS.map(eixo=>{
+    const membros = eixo.siglas.map(s=>{
+      if(SIGLA_GROUPS[s]){
+        // sigla agrupada: mesma disciplina, turmas diferentes -> 1 item só
+        const turmas = SIGLA_GROUPS[s].map(real=>bySigla[real]).filter(Boolean);
+        if(!turmas.length) return null;
+        return {
+          sigla: s,
+          periodo: turmas[0].periodo,
+          disciplina: turmas.map(t=>t.disciplina).join(' / '),
+          professor: turmas.map(t=>t.professor).join(' / '),
+          searchTerm: s
+        };
+      }
+      const d = bySigla[s];
+      return d ? { ...d, searchTerm: d.disciplina } : null;
+    }).filter(Boolean)
+      .sort((a,b)=> (String(a.periodo)).localeCompare(String(b.periodo), 'pt', {numeric:true}));
+    const textColor = textColorFor(eixo.color);
+    const chips = membros.map(d=>`
+      <button class="eixo-chip" style="background:${eixo.color};color:${textColor}" data-search="${d.searchTerm.replace(/"/g,'&quot;')}" title="${d.disciplina} — ${d.professor}">
+        ${d.sigla}<span class="p" style="color:${textColor}">${d.periodo==="A"?"Ativ.":d.periodo+"º"}</span>
+      </button>`).join('');
+    return `<div class="eixo-card" style="border-left-color:${eixo.color}">
+      <div class="eixo-head">
+        <h4>${eixo.label}</h4>
+        <span class="eixo-count">${membros.length} disciplina${membros.length===1?'':'s'}</span>
+      </div>
+      <div class="eixo-chips">${chips}</div>
+    </div>`;
+  }).join('');
+
+  const outros = DATA.filter(d=>!classified.has(d.sigla));
+  const outrosOptativas = outros.filter(d=>d.tipo==='Optativa').length;
+  const outrosAtividades = outros.filter(d=>d.tipo==='Atividade').length;
+  const outrosObrigatorias = outros.filter(d=>d.tipo==='Obrigatória').length;
+
+  const otherHTML = `<div class="eixo-other">
+    <div class="eixo-head">
+      <h4>Fora do fluxograma de eixos</h4>
+      <span class="eixo-count">${outros.length} disciplina${outros.length===1?'':'s'}</span>
+    </div>
+    <p>Optativas (${outrosOptativas}), atividades complementares/extensão (${outrosAtividades})${outrosObrigatorias?` e ${outrosObrigatorias} obrigatória(s) — como PG1 e PG2 (Projeto de Graduação)`:''} não constam no fluxograma curricular de eixos — cada optativa fica associada ao eixo da disciplina que ela substitui, mas não tem cor fixa no fluxograma oficial.</p>
+  </div>`;
+
+  document.getElementById('eixoGrid').innerHTML = cardsHTML + otherHTML;
+
+  document.querySelectorAll('.eixo-chip').forEach(chip=>{
+    chip.onclick = () => {
+      // filtro por eixo/disciplina afeta apenas a grade semanal abaixo;
+      // os demais painéis do dashboard permanecem sem esse filtro
+      state.eixoSearch = chip.dataset.search;
+      render();
+      document.getElementById('timetable').scrollIntoView({behavior:'smooth', block:'center'});
+    };
+  });
+}
+
+function render(){
+  const list = filtered();
+  renderLiveBanner();
+  renderKPIs(list);
+  renderTimetable(filteredForTimetable());
+  renderRoomMap();
+  renderBarPanel('profChart', list, d=>d.professor, 'navy');
+  renderBarPanel('salaChart', list, d=>(d.sala&&d.sala!=="–")?d.sala:null, 'clay');
+  renderVagas(list);
+  renderTable(list);
+}
+
+buildFilters();
+renderLegend();
+renderEixos();
+render();
+setInterval(render, 60000);
+</script>
+</body>
+</html>
